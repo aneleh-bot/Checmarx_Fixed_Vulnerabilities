@@ -1,3 +1,248 @@
+# Fixed Vulnerabilities + Severity ☆彡
+
+Checkmarx One: FIXED Vulnerabilities Report with Severity Enrichment
+
+## Description
+
+This project aims to collect **all vulnerabilities marked as FIXED** in **Checkmarx One Analytics** and attempt to **enrich the technical severity** of each vulnerability whenever possible, using only **public APIs** from the platform.
+
+Due to known limitations of Analytics and runtime APIs, not all FIXED vulnerabilities have retrievable technical severity. Therefore, the script is designed to produce **two clear, auditable, and technically justified datasets**.
+
+---
+
+## Objective
+
+- Extract all FIXED vulnerabilities from Analytics
+- Enrich technical severity when possible
+- Separate reliable data from purely historical data
+- Ensure traceability and technical justification for auditing
+
+---
+
+## Requirements
+
+### Python
+- **Python 3.9+** (Python 3.10 or higher recommended)
+
+### Dependencies
+Install dependencies with:
+
+```bash
+pip install requests python-dateutil
+```
+
+## Configuration
+
+At the beginning of the script `export_fixed_with_severity.py`, configure the variables below:
+
+```python
+AST_BASE      = "https://eu.ast.checkmarx.net"
+IAM_BASE      = "https://eu.iam.checkmarx.net"
+
+TENANT        = "your-tenant"
+CLIENT_ID     = "your-client-id"
+CLIENT_SECRET = "your-client-secret"
+```
+
+> **Important:**  
+> Adjust the URLs according to your region (US, US2, EU, EU2) and insert valid OAuth 2.0 credentials for your Checkmarx One tenant.
+
+---
+
+## How It Works
+
+1. Authenticate with Checkmarx IAM via Client Credentials (OAuth2)  
+2. Collect FIXED vulnerabilities via Analytics  
+3. List projects and scans  
+4. Intelligent selection of scans close to `dateFixed`  
+5. Attempt enrichment via Results API  
+6. Fallback via Rule Severity Map (when applicable)  
+7. Classification of results into two CSV files  
+8. Generation of a debug JSON file for auditing  
+
+---
+
+## Data Sources
+
+### 1. Analytics – FIXED (Primary Source)
+
+Endpoint used:
+
+```POST /api/data_analytics/drilldown/fixedResults```
+
+**Responsible for:**
+
+- Defining the universe of FIXED vulnerabilities
+- Providing historical information:
+  - projectName
+  - queryName
+  - scanner
+  - dateFixed
+  - state / status
+
+Known limitation:  
+This endpoint does not return severity per vulnerability.
+
+---
+
+### 2. Runtime – Results API (Enrichment)
+
+**Endpoints used:**
+
+```GET /api/projects```
+```GET /api/scans```
+```GET /api/results```
+
+**Strategy:**
+
+- Prioritize scans immediately before `dateFixed`
+- Also attempt the scan immediately after the fix
+- Use multiple correlation methods:
+  - similarityId / ruleId / queryId
+  - queryName
+  - contains
+  - token overlap (especially for IaC / KICS)
+
+**If found:**
+
+- Severity is considered reliable
+- Source is marked as `results`
+
+---
+
+### 3. Rule Severity Map (Intelligent Fallback)
+
+When the finding no longer exists in runtime:
+
+- The script builds a severity map by rule
+- Uses recent scans from multiple projects
+
+**Key:**
+
+```(scanner, normalized_queryName) → severity```
+
+Applicable for:
+
+- SAST
+- IaC / KICS
+- **Not** applied to aggregated SCA (Cx...), as it is not reliable.
+
+---
+
+## 4. Generated Files
+
+### 1. `fixed_with_severity.csv`
+
+**FIXED vulnerabilities with reliable technical severity.**
+
+**Additional columns:**
+- severity
+- severity_source (results or rulemap)
+- match_method
+- scanId_used
+
+---
+
+### 2. `fixed_analytics_only.csv`
+
+**FIXED vulnerabilities available only as historical data.**
+
+**Characteristics:**
+
+- Technical severity not retrievable via public API
+- Common in:
+  - Aggregated SCA (Cx...)
+  - Findings removed from runtime after fix
+
+**These records do not represent errors.**
+
+---
+
+### 3. `fixed_enrichment_debug.json`
+
+**Complete debug file containing:**
+- All FIXED vulnerabilities
+- Severity source
+- Correlation method used
+- Analyzed scan
+
+**Recommended for:**
+
+- Auditing
+- Troubleshooting
+- Technical validation
+
+---
+
+## Why Don’t All Vulnerabilities Have Severity?
+
+- Severity available → Finding still accessible in some scan
+- Severity missing → Finding exists only in Analytics
+- Aggregated SCA (Cx...) → Finding removed after fix
+- UI shows severity → Internal enrichment not exposed via API
+
+---
+
+## Known Limitations
+
+- Analytics stores historical data in an internal warehouse
+- Public APIs do not expose per-line severity for FIXED findings
+- Runtime APIs reflect only the current state of scans
+- Part of the data displayed in the UI is not retrievable via REST APIs
+
+---
+
+## Technical Justification (Audit)
+
+1. The severity displayed in the Analytics UI is derived from consolidated historical data.
+2. The public listing endpoint (`/api/data_analytics/drilldown/fixedResults`) does not return severity per vulnerability.
+3. Runtime APIs do not preserve historical findings after fixes, especially for aggregated SCA.
+4. Therefore, part of the FIXED vulnerabilities does not have technical severity retrievable via public APIs.
+
+---
+
+## 5. Execution
+
+In the terminal:
+
+```bash
+python export_fixed_with_severity.py
+```
+
+During execution, the script will display progress logs:
+
+```
+[ANALYTICS] page=0 offset=0 got=500 total=500
+[INFO] rulemap keys: 572
+[PROGRESS] 800/1049 reliable=915 analytics_only=134
+```
+
+---
+
+## 6. Code Structure
+
+```
+.
+├── export_fixed_with_severity.py
+├── fixed_with_severity.csv
+├── fixed_analytics_only.csv
+├── fixed_enrichment_debug.json
+└── README.md
+```
+
+---
+
+## 7. Status
+
+- Validated solution
+- Compatible with SAST, SCA, IaC, and KICS
+- Auditable
+- Ready for enterprise use
+
+---
+☆彡
+---
+
 # Vulnerabilidades Fixed + Severidade ☆彡
 Checkmarx One: Relatório de Vulnerabilidades FIXED com Enriquecimento de Severidade
 
