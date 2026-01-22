@@ -46,7 +46,6 @@ CLIENT_SECRET = "seu-client-secret"
 > **Importante:**  
 > Ajuste as URLs conforme sua região (US, US2, EU, EU2) e insira as credenciais válidas de OAuth 2.0 do seu tenant Checkmarx One.
 
----
 
 ## Funcionamento
 
@@ -63,7 +62,7 @@ CLIENT_SECRET = "seu-client-secret"
 
 ## Fonte dos Dados
 
-### 1. 1Analytics – FIXED (Fonte Primária)
+### 1. Analytics – FIXED (Fonte Primária)
 
 Endpoint utilizado:
 
@@ -81,8 +80,6 @@ Endpoint utilizado:
 
 Limitação conhecida:
 Esse endpoint não retorna severidade por vulnerabilidade.
-
----
 
 ### 2. Runtime – Results API (Enriquecimento)
 
@@ -106,8 +103,6 @@ Utiliza múltiplos métodos de correlação:
 
 - Severidade é considerada confiável
 - Origem marcada como results
-
----
 
 ### 3. Rule Severity Map (Fallback Inteligente)
 
@@ -203,8 +198,6 @@ Durante a execução, o script exibirá logs de progresso:
 [PROGRESS] 800/1049 reliable=915 analytics_only=134
 ```
 
----
-
 ## 6. Estrutura do Código
 ```
 .
@@ -215,7 +208,6 @@ Durante a execução, o script exibirá logs de progresso:
 └── README.md
 ```
 
----
 
 ## 7. Status
 
