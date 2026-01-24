@@ -1,6 +1,4 @@
-# Fixed Vulnerabilities + Severity ☆彡
-
-Checkmarx One: FIXED Vulnerabilities Report with Severity Enrichment
+# Checkmarx One: FIXED Vulnerabilities Report with Severity Enrichment ☆彡
 
 ## Description
 
